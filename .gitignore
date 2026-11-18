@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.vite/
+.dev.vite/
+.DS_Store
+
+# drafts, captures and run logs live here; never tracked
+.scratch/
+.audit/
+
+# local reference only: photographs and page captures the look was taken from,
+# some of them scraped pages that carry third-party session tokens
+ref/
