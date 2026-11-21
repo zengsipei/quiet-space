@@ -6,6 +6,16 @@
     "dev": "vite --host 127.0.0.1 --port 5178",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --port 4178"
+    "preview": "vite preview --port 4178",
+    "verify:hall": "node .agents/skills/verify-quiet-space/scripts/verify.mjs"
+  },
+  "dependencies": {
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/three": "0.180.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.8"
   }
 }

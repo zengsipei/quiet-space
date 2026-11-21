@@ -72,3 +72,19 @@ html, body {
   pointer-events: none;
   user-select: none;
 }
+
+.prototype-link {
+  position: fixed;
+  top: max(1.6rem, env(safe-area-inset-top));
+  right: max(1.8rem, env(safe-area-inset-right));
+  color: var(--ink);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid rgba(207, 217, 228, 0.2);
+  border-radius: 3px;
+  background: rgba(5, 8, 11, 0.25);
+}
+.prototype-link:hover { background: rgba(207, 217, 228, 0.1); }
+.prototype-link:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }

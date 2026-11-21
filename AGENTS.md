@@ -5,7 +5,7 @@ files instead of guessing: this file names the commands, the layout and the gate
 
 ## What this repo is
 
-quiet-space is a single-page WebGL scene: a quiet reading room rendered with three.js on one canvas,
+quiet-space is a static WebGL site: quiet reading spaces rendered with three.js on one canvas per page,
 built as a static Vite site with no backend, no accounts and no text input. Everything that would be
 collected about a visitor stays in the browser's memory, and the page says so in its own footer.
 
@@ -13,26 +13,29 @@ collected about a visitor stays in the browser's memory, and the page says so in
 
 | Path | What |
 | --- | --- |
-| `index.html`, `src/` | The app being built: page shell, styles, and the scene modules |
+| `index.html`, `src/main.ts`, `src/scene/` | The night reading room |
+| `prototype-hall.html`, `src/prototype-hall/` | North-library Book Mountain with daylight/dusk and quiet stay |
 | `proto/` | The lighting sample the look came from. A complete three.js room, camera presets and post-processing, kept as the reference implementation |
 | `ref/` | Photographs and page captures the room's look was taken from. Local reference, not shipped |
 
-`proto/` is the only tree that builds today. The root scaffold is mid-iteration: its `index.html`
-loads `/src/main.ts`, which does not exist yet, so `pnpm build` and `pnpm dev` at the root fail until
-that file lands. Work in `proto/` until the root tree takes over.
+The root app builds both pages. `proto/` remains the lighting reference, with its own toolchain.
+The prototype's coordinates and camera controls belong to its scene; the reading room keeps its
+existing controls and atmosphere.
 
 ## Commands
 
-Run inside `proto/`:
+Run at the repository root:
 
 ```sh
 pnpm install
 pnpm typecheck      # tsc --noEmit, about 3 seconds
-pnpm dev            # vite on 127.0.0.1:5173
+pnpm dev            # vite on 127.0.0.1:5178
 pnpm build
+pnpm verify:hall    # browser journey, PNGs and JSON in .scratch/book-mountain/after
 ```
 
-The root `package.json` has the same three scripts for the app that is replacing the sample.
+The browser journey needs Chromium. Read
+[verify-quiet-space](.agents/skills/verify-quiet-space/SKILL.md) before driving the prototype.
 
 ## Gates
 
@@ -42,6 +45,10 @@ The root `package.json` has the same three scripts for the app that is replacing
   under the same viewport and theme as the previous one, and keep it as evidence. Numbers in a
   post-processing chain are not visible in a diff.
 - There is no CI. A repo that skips either check is unverified, not clean.
+- For the Book Mountain prototype, run `pnpm verify:hall` and visually compare its five view captures
+  with the architectural reference. The script verifies controls and rendered pixels, not CAD accuracy.
+- Atmosphere and quiet-stay changes must preserve framing. Audio checks need silent load, actual
+  native output after opt-in and suspended output after mute, not only an active button.
 
 ## Decisions and vocabulary
 

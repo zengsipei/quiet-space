@@ -1,16 +1,15 @@
 export type Rng = () => number;
 
-export function makeRng(seed: number): Rng {
-  let state = seed >>> 0;
+export const mulberry32 = (seed: number): Rng => {
+  let a = seed >>> 0;
   return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
+};
 
-export function range(rng: Rng, min: number, max: number): number {
-  return min + (max - min) * rng();
-}
+export const range = (rng: Rng, min: number, max: number): number => min + rng() * (max - min);
+export const pick = <T>(rng: Rng, items: readonly T[]): T => items[Math.floor(rng() * items.length) % items.length];

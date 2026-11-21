@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#e2e9e9" />
+    <meta name="description" content="漫游天府人文艺术图书馆北区书山：层叠的阅读台地、曲面书墙与观湖空间。" />
+    <title>书山 · 天府人文艺术图书馆 | quiet-space</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23526653'/%3E%3Cpath d='M6 23h20M9 18h14M12 13h8M15 8h2' stroke='%23f9f7ea' stroke-width='2'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/src/prototype-hall/hall.css" />
+  </head>
+  <body data-atmosphere="day">
+    <canvas id="hall" aria-label="天府人文艺术图书馆北区书山三维空间"></canvas>
+    <div id="space-ui">
+    <header class="title-plate">
+      <p class="eyebrow">QUIET SPACE / CHENGDU</p>
+      <h1>书山</h1>
+      <p class="subtitle">天府人文艺术图书馆 · 阅读台地</p>
+      <p class="stay-copy">选一处风景，让时间慢下来。</p>
+    </header>
+    <span class="room-badge">北区 · 临湖空间</span>
+    <aside class="experience" aria-label="停留设置">
+      <div class="atmospheres" role="group" aria-label="空间光线">
+        <button id="day" type="button" aria-pressed="true">日光</button>
+        <button id="dusk" type="button" aria-pressed="false">暮色</button>
+      </div>
+      <button id="sound" type="button" aria-label="湖边风声" aria-pressed="false" title="开启或关闭轻柔风声，默认静音"><span class="sound-mark" aria-hidden="true">≋</span> 湖边风声<span class="sound-state" aria-hidden="true"></span></button>
+      <button id="quiet" type="button" aria-label="静坐" aria-pressed="false" aria-keyshortcuts="Q" title="收起界面，安静停留（Q）">静坐 <span aria-hidden="true">↗</span></button>
+    </aside>
+    <p id="sound-note" role="status" hidden></p>
+    <div class="controls">
+      <nav id="views" aria-label="观察机位"></nav>
+      <span class="gesture-hint"><span class="desktop-hint">拖动环视 · 滚轮缩放</span><span class="touch-hint">拖动环视 · 双指缩放</span></span>
+      <button id="reset" type="button" aria-label="复位" aria-keyshortcuts="R" title="复位当前机位（R）">↺ 复位</button>
+    </div>
+    <footer id="credit">
+      <span>成都 · 天府艺术公园</span>
+      <span class="source-credit">建筑设计：中国建筑西南设计研究院</span>
+      <a href="https://www.gooood.cn/chengdu-museum-of-contemporary-art-tianfu-library-of-humanity-and-art-china-southwest-architectural-design-and-research-institute-corp.htm" target="_blank" rel="noopener noreferrer">建筑参考 ↗</a>
+    </footer>
+    </div>
+    <button id="exit-quiet" type="button" aria-label="离开静坐" aria-keyshortcuts="Escape" hidden>离开静坐 <kbd>Esc</kbd></button>
+    <p id="status" role="status">正在打开书山…</p>
+    <script type="module" src="/src/prototype-hall/main.ts"></script>
+  </body>
+</html>
