@@ -7,7 +7,9 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4178",
-    "verify:hall": "node .agents/skills/verify-quiet-space/scripts/verify.mjs"
+    "verify:hall": "node .agents/skills/verify-quiet-space/scripts/verify.mjs",
+    "verify:visit": "node .agents/skills/verify-quiet-space/scripts/verify-visit.mjs",
+    "verify:character": "node .agents/skills/verify-quiet-space/scripts/verify-character.mjs"
   },
   "dependencies": {
     "three": "^0.180.0"

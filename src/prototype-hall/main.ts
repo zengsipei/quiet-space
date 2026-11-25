@@ -3,15 +3,20 @@ import {
 } from "three";
 import { buildFurnish } from "./furnish";
 import { buildHall } from "./geometry";
-import { VIEWS, type View } from "./layout";
+import { FIRST_R, STAIR_SPANS, TREAD, VIEWS, terrainPoint, type View } from "./layout";
 import { buildLights, type Atmosphere } from "./lighting";
 import { createNavigation } from "./navigation";
 import { createWind } from "./wind";
+import { createRenderLoop } from "../lib/renderLoop";
+import { createWalking } from "../visitor/walking";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#hall");
 const viewBar = document.querySelector<HTMLElement>("#views");
 const reset = document.querySelector<HTMLButtonElement>("#reset");
+const walk = document.querySelector<HTMLButtonElement>("#walk");
 const status = document.querySelector<HTMLElement>("#status");
+const message = document.querySelector<HTMLElement>("#status-message");
+const retry = document.querySelector<HTMLAnchorElement>("#retry");
 const shell = document.querySelector<HTMLElement>("#space-ui");
 const day = document.querySelector<HTMLButtonElement>("#day");
 const dusk = document.querySelector<HTMLButtonElement>("#dusk");
@@ -19,7 +24,7 @@ const quiet = document.querySelector<HTMLButtonElement>("#quiet");
 const exit = document.querySelector<HTMLButtonElement>("#exit-quiet");
 const sound = document.querySelector<HTMLButtonElement>("#sound");
 const soundNote = document.querySelector<HTMLElement>("#sound-note");
-if (!canvas || !viewBar || !reset || !status || !shell || !day || !dusk || !quiet || !exit || !sound || !soundNote) {
+if (!canvas || !viewBar || !reset || !walk || !status || !message || !retry || !shell || !day || !dusk || !quiet || !exit || !sound || !soundNote) {
   throw new Error("The Book Mountain page shell is incomplete");
 }
 
@@ -37,15 +42,21 @@ const start = () => {
   const scene = new Scene();
   const camera = new PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.1, 360);
   const hall = buildHall(scene);
-  buildFurnish(scene);
+  const furniture = buildFurnish(scene);
   const lighting = buildLights({ scene, renderer, lamps: hall.lamps });
   const navigation = createNavigation(canvas, camera);
+  const stairAngle = (STAIR_SPANS[0][0] + STAIR_SPANS[0][1]) / 2;
+  const spawn = terrainPoint(FIRST_R + TREAD * 0.6, stairAngle);
+  const walking = createWalking({ canvas, camera, scene, shell, button: walk, geometry: { floors: hall.walk.floors, solids: [...hall.walk.solids, ...furniture] }, spawn: [spawn.x, 0.025, spawn.z], yaw: Math.PI / 2 + stairAngle });
+  const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const events = new AbortController();
   const wind = createWind();
   let isQuiet = false;
   let soundEnabled = false;
   let soundChange = 0;
+  let renderingAvailable = true;
   const setQuiet = (enabled: boolean) => {
+    walking.suspend(enabled);
     isQuiet = enabled;
     shell.hidden = enabled;
     shell.inert = enabled;
@@ -59,7 +70,7 @@ const start = () => {
     sound.setAttribute("aria-pressed", String(enabled));
     soundNote.hidden = true;
     try {
-      await wind.setEnabled(enabled);
+      await wind.setEnabled(enabled && renderingAvailable);
     } catch {
       if (change !== soundChange) return;
       soundEnabled = false;
@@ -86,6 +97,11 @@ const start = () => {
   document.addEventListener("visibilitychange", () => { void setSound(soundEnabled); }, { signal: events.signal });
   window.addEventListener("pagehide", () => { void setSound(false); }, { signal: events.signal });
   let selected: View = VIEWS[0];
+  const setWalking = (enabled: boolean) => {
+    navigation.setEnabled(!enabled);
+    walking.setEnabled(enabled);
+    if (!enabled) navigation.set(selected);
+  };
   const buttons = VIEWS.map((view) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -97,20 +113,27 @@ const start = () => {
     return { view, button };
   });
   const select = (view: View) => {
+    setWalking(false);
     selected = view;
     navigation.set(view);
     for (const entry of buttons) entry.button.setAttribute("aria-pressed", String(entry.view === selected));
     canvas.dataset.view = view.key;
   };
   select(VIEWS[0]);
-  reset.addEventListener("click", () => select(selected), { signal: events.signal });
+  const resetView = () => { if (walking.active) walking.reset(); else select(selected); };
+  reset.addEventListener("click", resetView, { signal: events.signal });
+  walk.addEventListener("click", () => setWalking(!walking.active), { signal: events.signal });
   window.addEventListener("keydown", (event) => {
-    if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+    if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !status.hidden) return;
     if (event.key.toLowerCase() === "q") { setQuiet(!isQuiet); return; }
     if (event.key === "Escape" && isQuiet) { setQuiet(false); return; }
+    if (isQuiet && walking.active) return;
+    if (isQuiet && event.key.toLowerCase() === "m") return;
+    if (event.key === "Escape" && walking.active) { setWalking(false); return; }
+    if (event.key.toLowerCase() === "m") { setWalking(!walking.active); return; }
     const view = VIEWS.find((preset) => preset.key === event.key);
     if (view) select(view);
-    else if (event.key.toLowerCase() === "r") select(selected);
+    else if (event.key.toLowerCase() === "r") resetView();
   }, { signal: events.signal });
   window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -118,21 +141,54 @@ const start = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setSize(window.innerWidth, window.innerHeight, false);
   }, { signal: events.signal });
-  let previous = performance.now();
-  let frameId = 0;
-  const frame = (now: number) => {
-    const dt = Math.min((now - previous) / 1000, 0.1);
-    previous = now;
-    navigation.update(dt);
-    renderer.render(scene, camera);
-    if (!status.hidden) { status.hidden = true; canvas.dataset.ready = "true"; }
-    frameId = requestAnimationFrame(frame);
+  const showFailure = (text: string) => {
+    renderingAvailable = false;
+    canvas.dataset.ready = "false";
+    status.hidden = false;
+    message.textContent = text;
+    retry.hidden = false;
+    shell.inert = true;
+    retry.focus({ preventScroll: true });
   };
-  frameId = requestAnimationFrame(frame);
+  const loop = createRenderLoop((delta, elapsed) => {
+    try {
+      navigation.update(delta);
+      if (walking.update(Math.min(elapsed, 0.25), motion.matches)) renderer.shadowMap.needsUpdate = true;
+      renderer.render(scene, camera);
+      if (!status.hidden) {
+        const restoringFocus = document.activeElement === retry;
+        status.hidden = true;
+        retry.hidden = true;
+        shell.inert = isQuiet;
+        canvas.dataset.ready = "true";
+        if (restoringFocus) (isQuiet ? exit : quiet).focus({ preventScroll: true });
+      }
+    } catch {
+      walking.suspend(true);
+      loop.pause();
+      showFailure("暂时无法显示书山，请重新加载。");
+      void setSound(false);
+    }
+  }, 0.1);
+  canvas.addEventListener("webglcontextlost", (event) => {
+    event.preventDefault();
+    walking.suspend(true);
+    loop.pause();
+    showFailure("画面暂时中断，正在等待恢复。也可以重新加载书山。");
+    void setSound(soundEnabled);
+  }, { signal: events.signal });
+  canvas.addEventListener("webglcontextrestored", () => {
+    walking.suspend(isQuiet);
+    renderingAvailable = true;
+    renderer.shadowMap.needsUpdate = true;
+    loop.resume();
+    void setSound(soundEnabled);
+  }, { signal: events.signal });
   import.meta.hot?.dispose(() => {
-    cancelAnimationFrame(frameId);
+    loop.dispose();
     events.abort();
     navigation.dispose();
+    walking.dispose();
     wind.dispose();
     shell.hidden = false;
     shell.inert = false;
@@ -143,6 +199,7 @@ const start = () => {
   });
 };
 try { start(); } catch {
-  status.textContent = "无法打开三维空间，请使用支持 WebGL 的浏览器重试。";
+  message.textContent = "无法打开三维空间，请使用支持 WebGL 的浏览器重试。";
+  retry.hidden = false;
   status.classList.add("has-error");
 }

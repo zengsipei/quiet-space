@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { sampleCharacterPixels } from "./character-pixels.mjs";
 import { chromium, expect } from "@playwright/test";
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -47,21 +48,7 @@ const observe = (current) => {
   });
   current.on("requestfailed", (request) => report.errors.push(`${request.url()}: ${request.failure()?.errorText}`));
 };
-const pixels = async (current) => current.locator("#hall").evaluate((canvas) => new Promise((done) => {
-  requestAnimationFrame(() => {
-    const gl = canvas.getContext("webgl2");
-    if (!gl) { done({ width: canvas.width, height: canvas.height, colors: 0, signature: "no-webgl" }); return; }
-    const colors = [];
-    const sample = new Uint8Array(4);
-    for (let y = 1; y <= 16; y += 1) {
-      for (let x = 1; x <= 24; x += 1) {
-        gl.readPixels(Math.floor(canvas.width * x / 25), Math.floor(canvas.height * y / 17), 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, sample);
-        colors.push(Array.from(sample.subarray(0, 3), (value) => Math.floor(value / 8)).join(","));
-      }
-    }
-    done({ width: canvas.width, height: canvas.height, colors: new Set(colors).size, signature: colors.join(";") });
-  });
-}));
+const pixels = async (current) => current.locator("#hall").evaluate(sampleCharacterPixels);
 const capture = async (current, name, settle = false) => {
   await pause(850);
   let observed;
@@ -177,7 +164,7 @@ try {
   let ready = false;
   while (Date.now() < deadline && !ready) {
     if (server && server.exitCode !== null) throw new Error(`Vite exited before readiness: ${serverLog}`);
-    try { ready = (await fetch(`${base}/prototype-hall.html`, { signal: AbortSignal.timeout(1000) })).status === 200; } catch {}
+    try { ready = (await fetch(`${base}/`, { signal: AbortSignal.timeout(1000) })).status === 200; } catch {}
     if (!ready) await pause(250);
   }
   if (!ready) throw new Error(`The prototype did not become ready at ${base}`);
@@ -190,14 +177,9 @@ try {
   await desktop.addInitScript(installAudioProbe);
   page = await desktop.newPage();
   observe(page);
-  if (!baseline && !stayOnly) {
-    await page.goto(base, { waitUntil: "networkidle" });
-    await page.getByRole("link", { name: "探索书山", exact: true }).click();
-    await expect(page).toHaveURL(/prototype-hall\.html/);
-    await expect(page.getByRole("heading", { name: "书山", exact: true })).toBeVisible();
-  } else {
-    await page.goto(`${base}/prototype-hall.html`, { waitUntil: "networkidle" });
-  }
+  await page.goto(base, { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "书山", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "回到夜读室", exact: true })).toHaveCount(0);
   await expect(page.locator("#hall")).toBeVisible();
   const signatures = [];
   for (let index = 0; index < (stayOnly ? 0 : baseline ? 2 : labels.length); index += 1) {
@@ -252,7 +234,7 @@ try {
     const phone = await mobile.newPage();
     page = phone;
     observe(phone);
-    await phone.goto(`${base}/prototype-hall.html`, { waitUntil: "networkidle" });
+    await phone.goto(`${base}/`, { waitUntil: "networkidle" });
     if (!stayOnly) {
       for (let index = 0; index < labels.length; index += 1) {
         const button = phone.getByRole("button", { name: labels[index], exact: true });
@@ -286,7 +268,7 @@ try {
     browser = undefined;
     const nativeOutput = resolve(output, "native-audio");
     await new Promise((done, fail) => {
-      const child = spawn(process.execPath, [fileURLToPath(new URL("./verify-audio.mjs", import.meta.url)), "--base-url", base, "--out", nativeOutput], { cwd: root, stdio: "inherit" });
+      const child = spawn(process.execPath, [fileURLToPath(new URL("./verify-audio.mjs", import.meta.url)), "--base-url", base, "--out", nativeOutput, "--character"], { cwd: root, stdio: "inherit" });
       child.once("error", fail);
       child.once("exit", (code) => code === 0 ? done() : fail(new Error(`Native audio journey exited ${code}`)));
     });

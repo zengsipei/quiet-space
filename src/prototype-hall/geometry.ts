@@ -8,6 +8,7 @@ import {
 } from "./layout";
 import { oakTexture, plasterTexture, stoneTexture } from "./tex";
 import { seedRng, span } from "./rnd";
+import type { WalkGeometry } from "../visitor/surface";
 
 type Elevation = number | ((radius: number, angle: number) => number);
 type Surface = { front: number; back: number; height: Elevation; span: Span; warped?: boolean; rows?: number };
@@ -62,10 +63,11 @@ const curtain = ({ radius, bottom, top, span: [start, end], warped = true }: Cur
   return geometryOf(positions, uvs, indices);
 };
 
-export const buildHall = (scene: Scene): { lamps: MeshStandardMaterial } => {
+export const buildHall = (scene: Scene): { lamps: MeshStandardMaterial; walk: WalkGeometry } => {
   const root = new Group();
   root.name = "Book Mountain architecture";
   scene.add(root);
+  const walk: WalkGeometry = { floors: [], solids: [] };
   const oak = new MeshStandardMaterial({ map: oakTexture([18, 2]), color: 0xe4cea7, roughness: 0.72, side: DoubleSide });
   const shelfWood = new MeshStandardMaterial({ map: oakTexture([9, 1]), color: 0xc7a67b, roughness: 0.76, side: DoubleSide });
   const backWood = new MeshStandardMaterial({ color: PALETTE.bookBack, roughness: 0.9, side: DoubleSide });
@@ -78,6 +80,8 @@ export const buildHall = (scene: Scene): { lamps: MeshStandardMaterial } => {
     mesh.castShadow = shadow;
     mesh.receiveShadow = true;
     root.add(mesh);
+    if (name === "Ground reading floor" || name.startsWith("Reading terrace ") || name === "Stair tread" || name === "Stair landing") walk.floors.push(mesh);
+    else walk.solids.push(mesh);
     return mesh;
   };
   add("Ground reading floor", surface({ front: GLASS_R, back: LAST_R + 0.6, height: 0, span: FULL_SPAN }), floorStone, false);
@@ -234,5 +238,5 @@ export const buildHall = (scene: Scene): { lamps: MeshStandardMaterial } => {
     trees.setMatrixAt(index, transform.matrix);
   }
   landscape.add(trees);
-  return { lamps: lampMaterial };
+  return { lamps: lampMaterial, walk };
 };

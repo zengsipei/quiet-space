@@ -10,10 +10,11 @@ type Placement = { position: readonly [number, number, number]; size: readonly [
 const SPINES = [0xd6d3bd, 0xe2ddca, 0xbdb9a8, 0x6a7b6c, 0x596c7a, 0xb58764, 0x7b6253, 0x994f43, 0xd9c7a4, 0x414849];
 const LEAVES = [0x759953, 0x698747, 0x577a42, 0x88a964];
 
-export const buildFurnish = (scene: Scene): void => {
+export const buildFurnish = (scene: Scene): Mesh[] => {
   const root = new Group();
   root.name = "Books, reading furniture and interior trees";
   scene.add(root);
+  const solids: Mesh[] = [];
   const rng = seedRng(53);
   const transform = new Object3D();
   const color = new Color();
@@ -98,6 +99,7 @@ export const buildFurnish = (scene: Scene): void => {
     top.position.set(column.x, y + 0.77, column.z);
     top.receiveShadow = true;
     root.add(top);
+    solids.push(top);
     for (const angle of [0.25, 1.65, 3.6]) {
       chairAt(column.x + Math.cos(angle) * 1.3, y, column.z + Math.sin(angle) * 1.3, Math.PI - angle);
     }
@@ -115,9 +117,9 @@ export const buildFurnish = (scene: Scene): void => {
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     root.add(mesh);
+    return mesh;
   };
-  boxes("Reading desk tops", wood, desks);
-  boxes("Timber reading chairs", chairWood, chairs);
+  solids.push(boxes("Reading desk tops", wood, desks), boxes("Timber reading chairs", chairWood, chairs));
   boxes("Desk legs and task-light stems", metal, legs);
   boxes("Open pages", paper, papers);
   boxes("Linear task lights", glowing, lamps);
@@ -140,6 +142,7 @@ export const buildFurnish = (scene: Scene): void => {
     pot.position.set(point.x, tree.y + 0.285, point.z);
     pot.castShadow = true;
     root.add(pot);
+    solids.push(pot);
     for (let branch = 0; branch < 5; branch += 1) {
       const angle = branch * 2.4;
       const start = new Vector3(point.x, tree.y + 0.5, point.z);
@@ -164,4 +167,5 @@ export const buildFurnish = (scene: Scene): void => {
   }
   leaves.receiveShadow = true;
   root.add(leaves);
+  return solids;
 };

@@ -1,13 +1,13 @@
 # quiet-space
 
-Quiet reading spaces rendered with three.js, one canvas per page. The site is a static Vite build
-with no backend, accounts, or text input.
+A quiet Book Mountain website rendered with three.js. The root opens the north Tianfu Library
+of Humanity and Art's outer reading hall: five curved reading terraces, book walls, stair lanes,
+reading furniture, interior trees and lake-facing glazing. The night room is no longer shipped.
+The former hall URL redirects to the root; local lighting samples and references remain intact.
 
-The night reading room opens at the root. Its “探索书山” link opens the daylight
-[Book Mountain prototype](prototype-hall.html), an interpretation of the north Tianfu Library of
-Humanity and Art's outer reading hall. The first model includes five curved reading terraces,
-undulating book walls, two stair lanes, a tall rear collection wall, a rising ceiling, white
-columns, reading furniture, interior trees, and lake-facing glazing.
+The current Vite release has no application backend, accounts or text input. This is a snapshot,
+not a static-only requirement. Backend services and anonymous shared presence remain possible
+under an explicit data, privacy and lifecycle contract; neither is claimed as implemented.
 
 ## Run
 
@@ -16,62 +16,71 @@ pnpm install
 pnpm dev
 ```
 
-Open `http://127.0.0.1:5178/prototype-hall.html`. Select a view with its button or keys 1–5; drag to
-look, use the wheel or pinch to zoom, and press R or “复位” to reset the selected view.
+Open `http://127.0.0.1:5178/`. Select one of five views with its button or number key (1–5).
+Drag to look, wheel or pinch to zoom, and press R / “复位” to reset.
 
-## Stay quietly
+## Third-person traveler
 
-The Book Mountain hall offers “日光” and “暮色”. Daylight separates warm sunlight from cooler
-shadows; dusk brings a lower sun and warm reading lights. Changing atmosphere preserves the
-selected view and any framing changes.
+Select “漫步” or press M. An original rounded traveler appears: pearl hood, dark mask, small
+luminous eyes, a warm clay cape with a pale hem, and short articulated limbs. Sansa Temple's
+quiet, small-avatar presence and Sky's soft cloaked silhouettes inform the direction, without
+copying character models, cosmetics, textures or game mechanics.
 
-Select “静坐” or press Q to hide titles and tools. Drag and zoom remain available. Use the
-visible “离开静坐” button or Escape to return to the controls without resetting the camera.
-These presentation changes do not alter the night reading room.
+Use WASD, arrow keys or hold the visible direction buttons. Space / Enter holds a focused
+direction button. Drag to orbit; wheel or pinch changes camera distance. Movement is camera-
+relative and diagonals keep the same pace. The gait and cape move only while walking.
 
-“湖边风声” is optional, quiet synthesized wind, not a field recording. Sound is off initially.
-Its first enabled click creates a local Web Audio graph; muting or hiding the page suspends it.
-No audio assets are fetched and no preferences are stored. Reload starts in silent daylight.
-If audio is unavailable, a notice appears and the scene remains usable.
+The traveler starts facing a stair lane and uses actual treads, floors and furniture for support
+and collision. High ledges and unsupported drops are blocked; there is no jumping or flight.
+The camera shortens against geometry and the body fades if it would fill the lens. R resets
+both person and camera. Toggle M, press Escape outside quiet stay, or select a view to observe.
+
+## Quiet stay
+
+“日光” / “暮色” preserves your view while changing atmosphere. “静坐” / Q hides tools without
+moving the camera; “离开静坐” / Escape restores focus and controls. In observation you can
+still look around. In walking, quiet stay freezes the person and follow camera.
+
+Lake wind is synthesized locally, low gain and opt-in. Every load starts silent. Hidden pages
+and rendering loss suspend wind and frame scheduling. Foreground/context recovery keeps the
+pose but clears held inputs; a fresh press is required. Rendering failure offers “重新加载”.
+During walking, reduced motion removes follow/heading easing; no idle motion is added.
+State lives only in browser memory.
 
 ## Verify
 
+`pnpm typecheck` and `pnpm build` are the build gates. Read the
+[verification skill](.agents/skills/verify-quiet-space/SKILL.md) before browser verification.
+`pnpm verify:hall` owns an isolated Vite instance and verifies observation, atmosphere,
+touch and native audio. For a built preview, use:
+
 ```sh
-pnpm typecheck
-pnpm build
-pnpm exec playwright install chromium
-pnpm verify:hall
+pnpm preview --host 127.0.0.1
+pnpm verify:hall --base-url http://127.0.0.1:4178 --out .scratch/book-mountain/production
+pnpm verify:visit --base-url http://127.0.0.1:4178 --out .scratch/quiet-visit/production
+pnpm verify:character --base-url http://127.0.0.1:4178 --out .scratch/third-person/production
 ```
 
-The browser helper drives every prototype control at desktop and mobile sizes, starts and cleans
-up its own Vite instance, and saves PNGs plus a JSON action report under `.scratch/book-mountain/after`.
-To drive a built preview, start `pnpm preview --host 127.0.0.1`, then run
-`pnpm verify:hall --base-url http://127.0.0.1:4178 --out .scratch/book-mountain/production`.
-For a focused atmosphere, quiet-stay and audio check, add `--stay-only`; the complete journey
-includes those checks plus the existing navigation journeys.
-The native audio lifecycle leg needs Node 22+ and Xvfb on Linux, as described in the verification skill.
-See the [verification skill](.agents/skills/verify-quiet-space/SKILL.md) for browser setup,
-feature journeys, and evidence requirements.
+Visit checks rendering recovery, fallback/retry, focus and phone framing. Character checks
+walking, stairs, obstacles, orbit, touch cancellation and the legacy redirect. Hall's native
+Chromium tab leg proves hidden/foreground behavior and actual audio output (Node 22+ and Xvfb
+on Linux). PNGs and JSON reports stay in ignored `.scratch/`. Browser operation and screenshots
+are not real-phone performance, battery, comfort or a listening review. Optional visit
+`--soak-minutes 15` records an emulated-phone stay, not a hardware measurement.
 
-## Architectural reference
+## References and layout
 
-The [designer-supplied gooood article](https://www.gooood.cn/chengdu-museum-of-contemporary-art-tianfu-library-of-humanity-and-art-china-southwest-architectural-design-and-research-institute-corp.htm)
-provides the Book Mountain photographs, plan, and section. The model approximates their spatial
-relationships; its dimensions and context are adjustable interpretations, not surveyed geometry.
-The first release covers the north outer hall. The south art museum, underground spaces, and inner
-reading rooms are outside its scope. Reference photographs remain local and are not shipped as
-textures.
-
-## Layout
+The [designer-supplied architectural article](https://www.gooood.cn/chengdu-museum-of-contemporary-art-tianfu-library-of-humanity-and-art-china-southwest-architectural-design-and-research-institute-corp.htm)
+provides the Book Mountain plan, section and photographs. Dimensions are interpretations, not
+surveyed geometry. The south museum and inner reading rooms are outside this release.
 
 | Path | Purpose |
 | --- | --- |
-| `index.html`, `src/scene/` | Night reading room |
-| `prototype-hall.html`, `src/prototype-hall/` | Daylight Book Mountain model and navigation |
-| `proto/` | Original lighting reference with its own toolchain |
-| `.agents/skills/verify-quiet-space/` | Maintained browser journey and feature map |
-| `docs/specs/` | Settled feature scope |
-| `.agents/notes/` | Modeling and verification decisions |
-| `ref/`, `.scratch/` | Local references, drafts, and captures; not shipped |
+| `index.html`, `src/prototype-hall/` | Book Mountain, its atmosphere and observation controls |
+| `prototype-hall.html` | Legacy entry redirect, not another space |
+| `src/visitor/` | Original traveler and grounded third-person controls |
+| `src/lib/` | Render lifecycle and seeded audio randomness |
+| `proto/`, `ref/` | Local lighting sample and references; not shipped |
+| `docs/specs/`, `.agents/notes/` | Accepted scope and decisions |
 
-Agent rules are in [AGENTS.md](AGENTS.md). Domain terms are in [GLOSSARY.md](GLOSSARY.md).
+Agent rules: [AGENTS.md](AGENTS.md). Vocabulary: [GLOSSARY.md](GLOSSARY.md).

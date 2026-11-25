@@ -1,19 +1,19 @@
 # quiet-space feature map
 
-Baseline preconditions: install the root dependencies, have Chromium available, and leave port 5183
-free. The helper starts and cleans up its own Vite instance. A separately started build is driven
-with `--base-url`. The lighting sample under `proto` is reference material rather than this app.
+Root dependencies and WebGL-capable Chromium are prerequisites. The hall helper owns strict port
+5183 or drives a caller-owned `--base-url`. The local lighting sample is not the application.
 
 | Feature | Entry | Proof |
 | --- | --- | --- |
-| [Prototype entry and rendering](render.md) | Direct prototype URL or reading-room link | Visible colored WebGL buffer, entry screenshot, no browser errors |
-| [Camera presets](views.md) | Five view buttons or number keys | Five distinct rendered pixel signatures and captures |
-| [Look, zoom, and mobile layout](navigation.md) | Canvas gestures and reset | Changed rendered view, restored preset, touch and resize captures |
-| [Atmosphere, quiet stay and optional wind](stay.md) | Top settings or Q/Escape | Reversible lighting, hidden/inert tools, native audio output and silent reload |
+| [Book Mountain entry/rendering](render.md) | Root or legacy hall redirect | Colored WebGL, heading, no night-room link or browser errors |
+| [Camera presets](views.md) | Five buttons or 1–5 | Distinct pixels; key/button equivalence and reset |
+| [Look/zoom/mobile](navigation.md) | Canvas gestures | Changed framing, restored preset and no phone overflow |
+| [Atmosphere/quiet/wind](stay.md) | Top settings or Q/Escape | Reversible lighting/focus, silent load, actual native audio |
+| [Visit/recovery](visit.md) | Root and retry | Stable framing, context restoration and optional bounded stay |
+| [Cloaked traveler](character.md) | M / “漫步” and held arrows | Visible original person, stairs/obstacles, orbit and retained recovery pose |
 
-Run `node .agents/skills/verify-quiet-space/scripts/verify.mjs --out .scratch/book-mountain/after`
-for the complete map. `--baseline` captures the existing keyboard and mouse journey before changes.
-`--stay-only` drives the new presentation and audio slice without the older camera journey.
-Report every failed journey in `report.json`; an unavailable precondition is a failure, not a pass.
-Each feature file contains Sub-features, How to get to it (user POV), Driving it with Playwright,
-and Gotchas, in that order.
+Run `pnpm verify:hall`, then `pnpm verify:visit --base-url URL --out DIRECTORY` and
+`pnpm verify:character --base-url URL --out DIRECTORY` sequentially against a frozen build.
+Scene/model changes also need visual PNG review. Each feature file names Sub-features, How to
+get to it (user POV), Driving it with Playwright, and Gotchas. Failures stay in reports; a missing
+precondition is not a pass. Report physical-device and unavailable metric evidence separately.

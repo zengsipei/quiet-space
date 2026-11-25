@@ -1,50 +1,38 @@
 # Build and test
 
-The repository root builds the night reading room and the north-library Book Mountain prototype.
-The separate `proto` tree is a lighting reference, not a prerequisite package.
+The root builds Book Mountain and a legacy hall-URL redirect. The removed night room is not
+part of the build. The separate `proto/` lighting reference has its own toolchain and is not
+a prerequisite. Static Vite output describes this release, not a permanent backend prohibition.
 
 ## Build
 
-- `pnpm typecheck` checks the root TypeScript source without emitting files.
-- `pnpm build` typechecks and builds both HTML entries as a static Vite site.
-- `pnpm dev` starts the app on 127.0.0.1:5178.
-- `pnpm preview --host 127.0.0.1` serves the built site on port 4178.
-- The root pnpm lockfile fixes the dependency graph. Only esbuild's installation build is allowed.
+- `pnpm typecheck` checks root TypeScript without emitting files.
+- `pnpm build` typechecks and builds the root scene plus redirect.
+- `pnpm dev` serves 127.0.0.1:5178; `pnpm preview --host 127.0.0.1` serves the built site on 4178.
+- The root lockfile owns the dependency graph. No unit test suite, CI or metric/mutation gate exists.
 
-## Browser verification
+## Browser gates
 
-There is no unit test suite or CI. Scene, lighting, material and camera changes require a real
-browser journey and visual review of the resulting images against the architectural reference.
+Read the [verification skill](../../.agents/skills/verify-quiet-space/SKILL.md). Chromium with
+WebGL is required. `pnpm verify:hall` owns an isolated strict-port Vite instance on 5183 and
+checks five views, gestures, daylight/dusk, quiet stay and native audio. It closes desktop
+Chromium before touch checks to release software WebGL resources.
 
-Read the project-local [verification skill](../../.agents/skills/verify-quiet-space/SKILL.md).
-Install Chromium through Playwright, then run `pnpm verify:hall`. The helper owns an isolated
-strict-port Vite server on 5183, drives the page with Playwright, checks displayed WebGL pixels,
-and retains desktop and touch evidence. It closes Chromium between desktop and mobile journeys
-to release software WebGL resources, and cleans up only the instance it starts.
-
-For production evidence, build first and start the preview. Run:
+For frozen production evidence, build and start a caller-owned preview, then run all three:
 
 ```sh
 pnpm verify:hall --base-url http://127.0.0.1:4178 --out .scratch/book-mountain/production
+pnpm verify:visit --base-url http://127.0.0.1:4178 --out .scratch/quiet-visit/production
+pnpm verify:character --base-url http://127.0.0.1:4178 --out .scratch/third-person/production
 ```
 
-The helper does not stop a caller-owned preview. The root source is the test target; there are no
-workspace packages or stale distribution copies to resolve.
+Visit checks fallback/retry, quiet focus/framing, context restoration and phone layout.
+Character checks the original traveler, stair/obstacle movement, follow-camera control, quiet
+input suspension, multi-touch and the old URL redirect. Inspect front/back and mobile PNGs;
+rendered-pixel signatures prove operation, not visual fidelity or full capsule physics.
 
-## Cost and cadence
-
-Typechecks cost seconds and run after coherent source edits. The complete browser journey costs
-minutes under software WebGL on this host. Freeze source before the final build and full journey,
-inspect its five desktop views and portrait/landscape images, and repeat only when a change or a
-failure requires it. A pixel/control pass establishes operation, not measured CAD accuracy or
-hardware performance.
-
-The complete journey also verifies atmosphere reversal without camera changes, quiet-stay
-visibility and focus restoration, silent initial load, native Web Audio output after opt-in,
-mute/suspension, and silent reload. `--stay-only` drives this slice without the older camera
-journeys. The audio observer attaches an analyser at the browser's audio destination; it adds
-no production scene or audio controls and records context state plus sampled output amplitude.
-The final audio lifecycle leg needs Node 22+, Chromium and Xvfb on Linux. It drives a separate
-native browser because this host's Playwright-managed background pages remain visible. Real
-tab switching must suspend and resume opted-in wind. A child report and foreground PNG remain
-under `native-audio`; the temporary browser/profile are cleaned, not the caller's preview.
+Hall's native tab leg uses Node 22+, Chromium and Xvfb on Linux. It proves actual low-gain audio,
+hidden-page suspension, foreground resumption, preserved quiet framing and stale walking-key
+clearing. The cleanup regression remains required after native shutdown changes. Helpers stop
+only their own browser/process group and never a supplied preview. Failures retain evidence
+and exit nonzero. The optional visit soak is emulated-phone evidence, not hardware performance.

@@ -10,6 +10,18 @@ browser shutdown, and architectural fidelity still needs review against the supp
 
 ## Decision
 
+The current product is [Book Mountain only](../feature/2026-11-23-book-mountain-only.md).
+Root/legacy entry and the original traveler replace the historical two-space paths below.
+Hall, visit/recovery and character remain separate journeys at this same browser seam. Their
+pixel observer reads the displayed buffer once, then samples its grid in memory rather than
+performing hundreds of synchronous GPU transfers; visual and behavioral assertions are retained.
+Native foreground frame counts use the confirmed hidden/cancelled state as their baseline, not
+the earlier request to open another tab. Extra visible frames can occur before actual hiding.
+Walking waits for two fresh foreground draws before testing stale input: the first can restore
+the cached view and return released gait/shadows to idle. Four subsequent pixel comparisons
+still reject repeated movement; a fresh key must then change the rendered scene. This is a
+browser-frame ownership boundary, not a production pose setter or a weakened motion assertion.
+
 The running browser page is the single verification boundary. A Playwright helper starts an
 isolated strict-port Vite instance or drives a caller-owned preview. It opens the actual entry,
 selects every camera with buttons and keys, drags, zooms and resets, then repeats touch input in
@@ -26,6 +38,14 @@ presets, look/zoom/mobile layout, and quiet-stay/atmosphere/audio. Its baseline 
 before scene implementation.
 The completed model is typechecked, built, driven through its production preview, and reviewed
 visually against the architectural reference.
+
+The complete-visit journey adds the root's visible controls and two-way links, touch look/pinch,
+quiet framing and focus, browser context failure/recovery and retry. Reduced-motion captures
+freeze decorative pixels for exact framing checks; a separate normal root capture preserves the
+accepted appearance check. A test-owned scheduling observer records ready time and pending
+frames at the browser boundary. The native tab leg verifies cancellation when the hall or root
+is hidden and compares the root's quiet pixels after foreground return. A bounded emulated-phone
+stay samples elapsed time and observed frames, explicitly separate from physical-device evidence.
 
 Native browser shutdown requests `Browser.close`, then waits for the entire owned process group,
 escalating to TERM and KILL only when needed. Profile removal follows group termination, not the

@@ -4,6 +4,8 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { installAudioProbe, sampleAudioOutput } from "./audio-probe.mjs";
+import { installFrameProbe } from "./frame-probe.mjs";
+import { sampleCharacterPixels } from "./character-pixels.mjs";
 
 const args = process.argv.slice(2);
 if (args.includes("--help")) {
@@ -84,6 +86,7 @@ try {
   await send("Page.enable", {}, sessionId);
   await send("Runtime.enable", {}, sessionId);
   await send("Page.addScriptToEvaluateOnNewDocument", { source: `(${installAudioProbe.toString()})()` }, sessionId);
+  await send("Page.addScriptToEvaluateOnNewDocument", { source: `(${installFrameProbe.toString()})()` }, sessionId);
   const evaluate = async (expression) => {
     const result = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true }, sessionId);
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.text);
@@ -95,7 +98,7 @@ try {
     await send("Input.dispatchMouseEvent", { type: "mousePressed", ...bounds, button: "left", clickCount: 1 }, sessionId);
     await send("Input.dispatchMouseEvent", { type: "mouseReleased", ...bounds, button: "left", clickCount: 1 }, sessionId);
   };
-  await send("Page.navigate", { url: new URL("prototype-hall.html", base).href }, sessionId);
+  await send("Page.navigate", { url: base.href }, sessionId);
   await send("Page.bringToFront", {}, sessionId);
   await poll(() => evaluate("document.querySelector('#hall')?.dataset.ready === 'true'"), Boolean, "Hall did not render");
   assert.deepEqual(await audio(), [], "Fresh native page must not create audio");
@@ -107,6 +110,7 @@ try {
   await send("Target.activateTarget", { targetId: sibling.targetId });
   await poll(() => evaluate("document.visibilityState"), (state) => state === "hidden", "A real background tab must become hidden");
   const background = await poll(audio, (entries) => entries[0]?.state === "suspended", "Hidden page must suspend wind");
+  await poll(() => evaluate("window.__frameProbe.pending.size"), (count) => count === 0, "Hidden hall must cancel its scheduled frame");
   assert.equal(await evaluate("document.querySelector('#sound').getAttribute('aria-pressed')"), "true", "Background suspension must preserve opt-in");
   report.actions.push({ name: "background", visibility: "hidden", output: background });
   await send("Target.closeTarget", { targetId: sibling.targetId });
@@ -119,6 +123,65 @@ try {
   await clickSound();
   const muted = await poll(audio, (entries) => entries[0]?.state === "suspended", "Mute must suspend wind");
   report.actions.push({ name: "muted", output: muted });
+  await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] }, sessionId);
+  await send("Page.navigate", { url: base.href }, sessionId);
+  await poll(() => evaluate("document.querySelector('#hall')?.dataset.ready === 'true'"), Boolean, "Book Mountain did not render");
+  assert.deepEqual(await audio(), [], "Book Mountain must load silently");
+  for (const key of ["2", "q"]) {
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key }, sessionId);
+    await send("Input.dispatchKeyEvent", { type: "keyUp", key }, sessionId);
+  }
+  await poll(() => evaluate("document.querySelector('#exit-quiet').hidden"), (hidden) => hidden === false, "Book Mountain must enter quiet stay");
+  const beforeBackground = await send("Page.captureScreenshot", { format: "png" }, sessionId);
+  const rootSibling = await send("Target.createTarget", { url: "about:blank", newWindow: false });
+  await send("Target.activateTarget", { targetId: rootSibling.targetId });
+  await poll(() => evaluate("document.visibilityState"), (state) => state === "hidden", "Book Mountain must become hidden");
+  await poll(() => evaluate("window.__frameProbe.pending.size"), (count) => count === 0, "Hidden Book Mountain must cancel its scheduled frame");
+  const rootFrames = await evaluate("window.__frameProbe.frames");
+  report.hallLifecycle = [{ name: "hidden", visibility: "hidden", pendingFrames: 0, frames: rootFrames }];
+  await send("Target.closeTarget", { targetId: rootSibling.targetId });
+  await send("Page.bringToFront", {}, sessionId);
+  await poll(() => evaluate("document.visibilityState"), (state) => state === "visible", "Book Mountain must return to the foreground");
+  await poll(() => evaluate("window.__frameProbe.frames"), (count) => count > rootFrames, "Book Mountain must resume rendering");
+  assert.equal(await evaluate("document.querySelector('#hall').dataset.view"), "2");
+  assert.equal(await evaluate("document.querySelector('#space-ui').hidden"), true);
+  const restoredRoot = await send("Page.captureScreenshot", { format: "png" }, sessionId);
+  assert.equal(restoredRoot.data, beforeBackground.data, "Foreground return must retain quiet framing and reduced-motion pixels");
+  writeFileSync(resolve(output, "hall-foreground.png"), Buffer.from(restoredRoot.data, "base64"));
+  report.hallLifecycle.push({ name: "foreground", visibility: "visible", view: "2", quiet: true });
+  if (args.includes("--character")) {
+    const pixels = () => evaluate(`(${sampleCharacterPixels.toString()})(document.querySelector('#hall'))`);
+    for (const key of ["Escape", "m"]) {
+      await send("Input.dispatchKeyEvent", { type: "keyDown", key }, sessionId);
+      await send("Input.dispatchKeyEvent", { type: "keyUp", key }, sessionId);
+    }
+    await poll(() => evaluate("document.querySelector('#walk').getAttribute('aria-pressed')"), (pressed) => pressed === "true", "Book Mountain must enter walking");
+    const initialPerson = await pixels();
+    assert.ok(initialPerson.colors > 12, "Walking must render a colored space");
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "w" }, sessionId);
+    await poll(pixels, (current) => current.signature !== initialPerson.signature, "A native held key must move the rendered person");
+    const walkingSibling = await send("Target.createTarget", { url: "about:blank", newWindow: false });
+    await send("Target.activateTarget", { targetId: walkingSibling.targetId });
+    await poll(() => evaluate("document.visibilityState"), (state) => state === "hidden", "Walking tab must become hidden");
+    await poll(() => evaluate("window.__frameProbe.pending.size"), (count) => count === 0, "Hidden walking tab must cancel rendering");
+    const walkingFrames = await evaluate("window.__frameProbe.frames");
+    report.hallWalking = [{ name: "hidden", visibility: "hidden", pendingFrames: 0, frames: walkingFrames }];
+    await send("Target.closeTarget", { targetId: walkingSibling.targetId });
+    await send("Page.bringToFront", {}, sessionId);
+    await poll(() => evaluate("document.visibilityState"), (state) => state === "visible", "Walking tab must become visible");
+    await poll(() => evaluate("window.__frameProbe.frames"), (count) => count >= walkingFrames + 2, "Walking tab must draw two fresh foreground frames before the pixel baseline");
+    report.walkingBaseline = { hiddenFrames: walkingFrames, foregroundFrames: await evaluate("window.__frameProbe.frames"), reducedMotion: await evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches") };
+    const returnedPerson = await pixels();
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "w", autoRepeat: true }, sessionId);
+    for (let frame = 0; frame < 4; frame += 1) assert.equal((await pixels()).signature, returnedPerson.signature, "Foreground return must not resume old or repeated movement");
+    await send("Input.dispatchKeyEvent", { type: "keyUp", key: "w" }, sessionId);
+    await send("Input.dispatchKeyEvent", { type: "keyDown", key: "a" }, sessionId);
+    await poll(pixels, (current) => current.signature !== returnedPerson.signature, "A fresh key must remain usable after foreground return");
+    await send("Input.dispatchKeyEvent", { type: "keyUp", key: "a" }, sessionId);
+    const walkingScreenshot = await send("Page.captureScreenshot", { format: "png" }, sessionId);
+    writeFileSync(resolve(output, "hall-walking-foreground.png"), Buffer.from(walkingScreenshot.data, "base64"));
+    report.hallWalking.push({ name: "foreground", visibility: "visible", staleInputStopped: true, freshInputMoved: true });
+  }
   assert.deepEqual(report.errors, []);
   report.verdict = "VERIFIED";
 } catch (error) {

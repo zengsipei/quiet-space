@@ -1,20 +1,19 @@
 # GLOSSARY
 
-The scene's vocabulary. Use these terms in code, tickets and prose, and record a term here when a
-change settles one.
+Use these terms in code, tickets and prose.
 
 | Term | Meaning |
 | --- | --- |
-| 夜读室 | The reading room this repo renders, and the page's title. |
-| 样张 (`proto/`) | The accepted lighting reference for the night reading room, distinct from the Book Mountain model. |
-| 机位 (view) | One camera preset. The sample switches between four with the number keys. |
-| 环视 (look) | Drag-to-look control over yaw and pitch, easing toward the target pose. |
-| 调色 (grade) | The post-processing pass: vignette, warm highlights against cool shadows, fine grain. |
-| 泛光 (bloom) | The bloom pass, part of the same chain as the grade. |
-| 空气 (atmosphere) | Fog, dust motes and the haze around the window: the layer over the architecture, not the architecture. |
-| 书山 (Book Mountain) | The north library's outer hall, where winding book walls and stepped reading platforms form an artificial terrain facing the lake. Avoid using this term for the entire library or the south art museum. |
-| 阅读台地 (reading terrace) | A reading platform within Book Mountain, stepping upward away from the lake and integrating seating with the book walls. |
-| 藏书墙 (book wall) | A wall of open bookcase bays that separates neighboring reading terraces or defines the rear collection boundary. |
-| 氛围 (atmosphere preset) | The Book Mountain's daylight or dusk light/sky settings. Independent of its geometry and selected view; distinct from the night room's animated air layer. |
-| 静坐 (quiet stay) | An explicit presentation mode that hides titles and tools without moving the camera. A visible exit and Escape restore the interface. |
-| 湖边风声 (lakeside wind) | Opt-in, low-gain synthesized ambient noise generated locally with Web Audio. Not a recording, music stream, or automatically played sound. |
+| 书山 (Book Mountain) | The north Tianfu library's outer reading hall, the only shipped space, not the whole library or south museum. |
+| 阅读台地 (reading terrace) | A stepped reading platform integrating seating and curved book walls. |
+| 藏书墙 (book wall) | Open bookcase bays between terraces or along the rear boundary. |
+| 机位 (view) | One of five observation camera presets. |
+| 环视 (look/orbit) | Deliberate drag-to-look control; walking orbits the visible person. |
+| 氛围 (atmosphere preset) | Daylight or dusk light/sky settings, independent of geometry and camera framing. |
+| 静坐 (quiet stay) | Hides tools without teleporting; in walking freezes movement and follow camera, without a sit animation. |
+| 湖边风声 (lakeside wind) | Locally synthesized, opt-in low-gain Web Audio noise; not a recording or stream. |
+| 行走人物 (walking visitor) | The original local cloaked traveler, not an online visitor or shared-presence indicator. |
+| 披风旅人 (cloaked traveler) | Rounded pale hood, dark mask and luminous eyes, short limbs and a warm clay cape; an original quiet-avatar design. |
+| 漫步 (walking) | Explicit grounded control of the traveler, separate from default observation. |
+| 第三人称 (third person) | A follow view outside the traveler, with deliberate orbit and bounded camera distance. |
+| 样张 (`proto/`) | Preserved local lighting reference, not an active night-room product or shipped entry. |

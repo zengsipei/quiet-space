@@ -1,63 +1,52 @@
 # AGENTS.md
 
-Rules for any agent working in this repo. Read this before changing code, and read the repo's own
-files instead of guessing: this file names the commands, the layout and the gates.
+Rules for agents working in this repo. Read the source and the local verification skill before
+changing scene behavior; do not infer a permanent restriction from the current implementation.
 
-## What this repo is
+## Product and layout
 
-quiet-space is a static WebGL site: quiet reading spaces rendered with three.js on one canvas per page,
-built as a static Vite site with no backend, no accounts and no text input. Everything that would be
-collected about a visitor stays in the browser's memory, and the page says so in its own footer.
+quiet-space ships only Book Mountain at the root, with one three.js canvas. The former
+`prototype-hall.html` entry redirects to `./`. The night reading room is retired, not a second
+product route. `proto/` and `ref/` remain local lighting/reference material and are not shipped.
 
-## Layout
+The current Vite implementation has no application backend, accounts or text input; visit state
+is in memory. Backend services and anonymous co-presence are allowed directions, with explicit
+data/privacy/lifecycle contracts and truthful visitor-facing claims. See
+`docs/specs/complete-quiet-visit.md` and `docs/specs/third-person-visitor.md`.
 
 | Path | What |
 | --- | --- |
-| `index.html`, `src/main.ts`, `src/scene/` | The night reading room |
-| `prototype-hall.html`, `src/prototype-hall/` | North-library Book Mountain with daylight/dusk and quiet stay |
-| `proto/` | The lighting sample the look came from. A complete three.js room, camera presets and post-processing, kept as the reference implementation |
-| `ref/` | Photographs and page captures the room's look was taken from. Local reference, not shipped |
+| `index.html`, `src/prototype-hall/` | Book Mountain architecture, atmosphere and navigation |
+| `src/visitor/` | Original cloaked traveler, grounded movement and third-person input |
+| `src/lib/` | Rendering lifecycle and audio randomness |
+| `proto/` | Accepted lighting sample with its separate reference toolchain |
+| `ref/`, `.scratch/` | Local references, drafts and evidence; preserve, do not ship |
 
-The root app builds both pages. `proto/` remains the lighting reference, with its own toolchain.
-The prototype's coordinates and camera controls belong to its scene; the reading room keeps its
-existing controls and atmosphere.
+## Commands and gates
 
-## Commands
+`pnpm install`; `pnpm dev` serves 127.0.0.1:5178. Run `pnpm typecheck` after coherent
+edits and `pnpm build` before production verification. Build output includes one application
+entry and the legacy redirect, not two scene bundles. No unit suite or CI is configured.
 
-Run at the repository root:
+Read [.agents/skills/verify-quiet-space/SKILL.md](.agents/skills/verify-quiet-space/SKILL.md).
+Run `pnpm verify:hall` for observation/atmosphere/touch/native audio. It owns an isolated
+strict-port Vite instance; `--base-url` reuses and leaves a caller-owned preview running.
+Use `pnpm verify:visit --base-url URL --out DIRECTORY` for fallback, rendering recovery and
+phone focus/framing; `pnpm verify:character --base-url URL --out DIRECTORY` for walking.
 
-```sh
-pnpm install
-pnpm typecheck      # tsc --noEmit, about 3 seconds
-pnpm dev            # vite on 127.0.0.1:5178
-pnpm build
-pnpm verify:hall    # browser journey, PNGs and JSON in .scratch/book-mountain/after
-```
+Scene, material and camera changes require real browser PNGs and visual review. Compare the
+five view captures with the architectural reference; compare traveler front/back with its
+original design. Pixel counts and typechecking alone do not prove appearance. Preserve actual
+floor/solid mesh ownership and exclusive observation/walking camera ownership. Do not add
+character lights or change the established architectural lighting to disguise model problems.
 
-The browser journey needs Chromium. Read
-[verify-quiet-space](.agents/skills/verify-quiet-space/SKILL.md) before driving the prototype.
-
-## Gates
-
-- `pnpm typecheck` is the cheap gate. Run it after every edit; a three.js scene fails at runtime long
-  before it fails at compile time, so this only proves the types.
-- Scene, lighting and material changes need a real browser check: open the page, take a screenshot
-  under the same viewport and theme as the previous one, and keep it as evidence. Numbers in a
-  post-processing chain are not visible in a diff.
-- There is no CI. A repo that skips either check is unverified, not clean.
-- For the Book Mountain prototype, run `pnpm verify:hall` and visually compare its five view captures
-  with the architectural reference. The script verifies controls and rendered pixels, not CAD accuracy.
-- Atmosphere and quiet-stay changes must preserve framing. Audio checks need silent load, actual
-  native output after opt-in and suspended output after mute, not only an active button.
-
-## Decisions and vocabulary
-
-`docs/adr/` holds decisions that outlive a change. `GLOSSARY.md` holds the scene's vocabulary: use
-its terms in code, in tickets and in prose, and record a term there when a change settles one.
+Audio needs silent load, actual native output after opt-in and suspended output after mute,
+hiding or rendering loss. The hall journey includes the native tab lifecycle leg. Physical
+phone frame rate, battery and comfort must be reported separately from emulated evidence.
+No CRAP, duplication metric or mutation thresholds are configured; do not invent values.
 
 ## Conventions
 
-- `CLAUDE.md` points at this file. Keep it a one-line pointer.
-- Drafts, captures and run logs stay in `.scratch/`, which is ignored.
-- No comments in code. A constraint that cannot be expressed in the code itself belongs in the ADR or
-  in `GLOSSARY.md`.
+`CLAUDE.md` stays a one-line pointer here. Use `GLOSSARY.md` terms and keep architectural
+decisions in `docs/adr/`; other decisions use the existing notes/tracker conventions.
+No comments in source code. No unrequested landing, deployment, reset, clean or reference deletion.

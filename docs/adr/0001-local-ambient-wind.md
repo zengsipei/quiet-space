@@ -4,9 +4,9 @@ Status: accepted
 
 ## Context
 
-Book Mountain needs optional soft ambient sound while remaining a private static site. A visitor
-must not receive autoplay or retain a previous sound preference on the next load. Audio failures
-must not make the three-dimensional space unavailable.
+The initial Book Mountain implementation has no application backend. It needs optional soft
+ambient sound without autoplay or a previous sound preference carrying into the next load.
+Audio failures must not make the three-dimensional space unavailable.
 
 ## Decision
 
@@ -18,6 +18,8 @@ closes the context. Audio failure restores the off state and displays a page not
 
 No audio file, stream, third-party request or stored preference is involved. The name lakeside
 wind describes a synthesized atmosphere, not an authentic recording from the library.
+This decision governs ambient wind in the current release. It does not prohibit backend
+services or shared presence elsewhere in the product.
 
 ## Alternatives
 

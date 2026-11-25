@@ -9,7 +9,8 @@ the model or disrupting its five observation views.
 ## Solution
 
 Offer layered daylight and dusk, an explicit reduced-interface quiet stay, and locally generated
-lakeside wind that starts only on opt-in. Keep the site static, private and silent by default.
+lakeside wind that starts only on opt-in. This prototype increment is client-side, private and
+silent by default; it does not restrict future releases to a static or backend-free design.
 
 ## User Stories
 
@@ -47,8 +48,10 @@ review; typecheck coherent edits and build before the final journey.
 
 ## Out of Scope
 
-Architecture expansion, measured CAD, free walking, collision, productivity timers, music,
-uploaded recordings, backend, accounts, persistence, deployment and Git landing.
+This original atmosphere increment excludes architecture expansion, measured CAD, walking,
+collision, timers, music, uploaded recordings, backend, accounts, persistence and landing.
+Walking is now specified separately in `third-person-visitor.md`; backend and shared presence
+remain allowed product directions, not prohibited capabilities.
 
 ## Further Notes
 

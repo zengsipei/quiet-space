@@ -39,18 +39,6 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
 h1 { margin-top: 8px; font-size: 34px; font-weight: 400; letter-spacing: 0.25em; line-height: 1.25; }
 .subtitle { margin-top: 8px; font-size: 11px; letter-spacing: 0.1em; color: var(--muted); }
 .stay-copy { margin-top: 15px; font-size: 11px; letter-spacing: 0.12em; color: var(--muted); }
-.room-badge {
-  position: fixed;
-  top: max(35px, env(safe-area-inset-top));
-  right: max(38px, env(safe-area-inset-right));
-  padding: 7px 12px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-  border-radius: 20px;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  backdrop-filter: blur(12px);
-}
 .experience {
   position: fixed;
   top: max(84px, calc(env(safe-area-inset-top) + 64px));
@@ -153,6 +141,9 @@ h1 { margin-top: 8px; font-size: 34px; font-weight: 400; letter-spacing: 0.25em;
 .touch-hint { display: none; }
 #reset { min-width: 42px; min-height: 44px; border: 0; background: transparent; font-size: 11px; color: var(--muted); }
 #reset:hover { color: var(--ink); }
+.controls #walk { min-width: 44px; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: transparent; font-size: 11px; color: var(--muted); }
+.controls #walk:hover { background: #85887b22; }
+.controls #walk[aria-pressed="true"] { background: var(--accent); color: var(--selected); }
 #credit {
   position: fixed;
   left: 24px;
@@ -180,12 +171,13 @@ h1 { margin-top: 8px; font-size: 34px; font-weight: 400; letter-spacing: 0.25em;
 }
 #status[hidden] { display: none; }
 #status.has-error { padding: 30px; text-align: center; line-height: 2; }
+#status { gap: 16px; padding: 30px; text-align: center; line-height: 1.8; }
+#retry { color: inherit; min-height: 44px; padding: 10px; }
 @media (max-width: 720px) {
   .title-plate { top: max(24px, env(safe-area-inset-top)); left: 22px; }
   h1 { font-size: 28px; }
   .subtitle { font-size: 10px; }
   .stay-copy { margin-top: 12px; font-size: 10px; }
-  .room-badge { top: 26px; right: 20px; font-size: 9px; }
   .experience { top: max(145px, calc(env(safe-area-inset-top) + 124px)); left: 22px; right: auto; max-width: calc(100% - 44px); gap: 4px; padding: 5px; }
   .experience button { padding: 9px 10px; font-size: 10px; }
   #sound-note { top: 212px; left: 22px; right: auto; }
@@ -205,7 +197,6 @@ h1 { margin-top: 8px; font-size: 34px; font-weight: 400; letter-spacing: 0.25em;
   h1 { font-size: 24px; margin-top: 4px; }
   .subtitle { margin-top: 4px; }
   .stay-copy { display: none; }
-  .room-badge { top: 18px; }
   .experience { top: max(57px, env(safe-area-inset-top)); left: auto; right: max(20px, env(safe-area-inset-right)); }
   #sound-note { top: 120px; left: auto; right: 20px; }
   .controls { bottom: max(37px, calc(env(safe-area-inset-bottom) + 24px)); }

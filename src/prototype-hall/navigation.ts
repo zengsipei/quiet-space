@@ -18,6 +18,7 @@ export const createNavigation = (canvas: HTMLCanvasElement, camera: PerspectiveC
   let zoom = 52;
   let goalZoom = 52;
   let pinchDistance = 0;
+  let enabled = true;
   const distance = () => {
     const points = Array.from(pointers.values());
     return points.length === 2 ? Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y) : 0;
@@ -39,7 +40,7 @@ export const createNavigation = (canvas: HTMLCanvasElement, camera: PerspectiveC
     orient();
   };
   canvas.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) return;
+    if (!enabled || event.button !== 0) return;
     pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
     canvas.setPointerCapture(event.pointerId);
     canvas.style.cursor = "grabbing";
@@ -70,12 +71,20 @@ export const createNavigation = (canvas: HTMLCanvasElement, camera: PerspectiveC
     canvas.addEventListener(event, release, { signal: listeners.signal });
   }
   canvas.addEventListener("wheel", (event) => {
+    if (!enabled) return;
     event.preventDefault();
     goalZoom = clamp(goalZoom + event.deltaY * 0.035, 32, 72);
   }, { passive: false, signal: listeners.signal });
   return {
     set,
+    setEnabled: (value: boolean) => {
+      enabled = value;
+      for (const identifier of pointers.keys()) if (canvas.hasPointerCapture(identifier)) canvas.releasePointerCapture(identifier);
+      pointers.clear();
+      pinchDistance = 0;
+    },
     update: (dt: number) => {
+      if (!enabled) return;
       const easing = 1 - Math.exp(-12 * dt);
       yaw += (goalYaw - yaw) * easing;
       pitch += (goalPitch - pitch) * easing;
